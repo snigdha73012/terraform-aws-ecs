@@ -24,10 +24,12 @@ locals {
     security_groups  = flatten(concat([try(aws_security_group.this[0].id, [])], var.security_group_ids))
     subnets          = var.subnet_ids
   }
+
+  create_service = var.create && var.create_service
 }
 
 resource "aws_ecs_service" "this" {
-  count = var.create && !var.ignore_task_definition_changes ? 1 : 0
+  count = local.create_service && !var.ignore_task_definition_changes ? 1 : 0
 
   dynamic "alarms" {
     for_each = length(var.alarms) > 0 ? [var.alarms] : []
@@ -213,7 +215,7 @@ resource "aws_ecs_service" "this" {
 ################################################################################
 
 resource "aws_ecs_service" "ignore_task_definition" {
-  count = var.create && var.ignore_task_definition_changes ? 1 : 0
+  count = local.create_service && var.ignore_task_definition_changes ? 1 : 0
 
   dynamic "alarms" {
     for_each = length(var.alarms) > 0 ? [var.alarms] : []
@@ -1188,7 +1190,7 @@ resource "aws_ecs_task_set" "ignore_task_definition" {
 ################################################################################
 
 locals {
-  enable_autoscaling = var.create && var.enable_autoscaling && !local.is_daemon
+  enable_autoscaling = local.create_service && var.enable_autoscaling && !local.is_daemon
 
   cluster_name = element(split("/", var.cluster_arn), 1)
 }
@@ -1320,7 +1322,11 @@ resource "aws_security_group" "this" {
   description = var.security_group_description
   vpc_id      = data.aws_subnet.this[0].vpc_id
 
-  tags = merge(var.tags, var.security_group_tags)
+  tags = merge(
+    var.tags,
+    { "Name" = local.security_group_name },
+    var.security_group_tags
+  )
 
   lifecycle {
     create_before_destroy = true
