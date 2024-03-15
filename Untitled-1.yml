@@ -1,0 +1,10 @@
+User: arn:aws:iam::263547339960:user/kk_labs_user_296564
+Service: iam
+Action: GetAccessKeyLastUsed
+On resource(s): access
+Context: AKIAT2XFFIS4AXF7X2JU because no identity-based policy allows the iam:GetAccessKeyLastUsed action
+
+
+AKIAT2XFFIS4NRHRXPPH
+
+Zzi356yoqxBcVEhwCPg0C/N47W0F7/VRpqu3NFb+
